@@ -64,17 +64,11 @@ $(DATAFIELDINFO)
 	UAVDataObject* clone(uint32_t instID);
 	UAVDataObject* dirtyClone();
 
+	ssize_t serialization(uint8_t *dataOut);
+	ssize_t deserialization(const uint8_t *dataIn);
+	std::string toStringData();
+
 	static $(NAME)* GetInstance(UAVObjectManager* objMngr, uint32_t instID = 0);
-
-	$(PROPERTY_GETTERS)
-	$(PROPERTY_SETTERS)
-
-	// signal
-	//$(PROPERTY_NOTIFICATIONS)
-
-private:
-	// slots
-	//void emitNotifications();
 
 private:
 	DataFields data;
