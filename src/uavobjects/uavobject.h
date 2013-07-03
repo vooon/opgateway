@@ -26,11 +26,22 @@
 #define UAVOBJECT_H
 
 #include <string>
+#include <sstream>
 #include <boost/signals2.hpp>
 #include <boost/thread/recursive_mutex.hpp>
+#include <boost/thread/thread.hpp>
 
 namespace openpilot
 {
+
+#define UAVOBJ_FLT_ACCESS_SHIFT				0
+#define UAVOBJ_GCS_ACCESS_SHIFT				1
+#define UAVOBJ_FLT_TELEMETRY_ACKED_SHIFT		2
+#define UAVOBJ_GCS_TELEMETRY_ACKED_SHIFT		3
+#define UAVOBJ_FLT_TELEMETRY_UPDATE_MODE_SHIFT		4
+#define UAVOBJ_GCS_TELEMETRY_UPDATE_MODE_SHIFT		6
+#define UAVOBJ_UPDATE_MODE_MASK				0x3
+
 
 class UAVObject {
 public:
@@ -68,11 +79,11 @@ public:
 	 *    6-7    gcsTelemetryUpdateMode     Update mode used by the GCS (UAVObjUpdateMode)
 	 */
 	typedef struct {
-		uint16_t flags; /** Defines flags for update and logging modes and whether an update should be ACK'd (bits defined above) */
+		uint8_t flags; /** Defines flags for update and logging modes and whether an update should be ACK'd (bits defined above) */
 		uint16_t flightTelemetryUpdatePeriod; /** Update period used by the telemetry module (only if telemetry mode is PERIODIC) */
 		uint16_t gcsTelemetryUpdatePeriod; /** Update period used by the GCS (only if telemetry mode is PERIODIC) */
 		uint16_t loggingUpdatePeriod; /** Update period used by the logging module (only if logging mode is PERIODIC) */
-	} Metadata;
+	} __attribute__((packed)) Metadata;
 
 
 	UAVObject(uint32_t objID, bool isSingleInstance, const std::string &name);
@@ -82,20 +93,20 @@ public:
 	bool isSingleInstance();
 	std::string getName();
 	size_t getNumBytes();
-	virtual ssize_t serialize(uint8_t *dataOut);
-	virtual ssize_t deserialize(const uint8_t *dataIn);
-	// bool save();
-	// bool load();
+	virtual ssize_t serialize(uint8_t *dataOut) = 0;
+	virtual ssize_t deserialize(const uint8_t *dataIn) = 0;
+	//virtual bool save() = 0;
+	//virtual bool load() = 0;
 	virtual void setMetadata(const Metadata &mdata) = 0;
-	virtual Metadata getMetadata();
-	virtual Metadata getDefaultMetadata();
-	void lock();
-	bool lock(int timeoutMs);
-	void unlock();
-	boost::recursive_timed_mutex *getMutex();
+	virtual Metadata getMetadata() = 0;
+	virtual Metadata getDefaultMetadata() = 0;
+	//void lock();
+	//bool lock(int timeoutMs);
+	//void unlock();
+	//boost::recursive_timed_mutex *getMutex();
 
 	std::string toString();
-	virtual std::toStringData();
+	virtual std::string toStringData() = 0;
 
 	// Metadata accessors
 	static void MetadataInitialize(Metadata &meta);

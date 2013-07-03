@@ -66,6 +66,9 @@ include_directories(include
 ## Declare a cpp library
 add_library(uavobjects
    src/uavobjects/uavobject.cpp
+   src/uavobjects/uavmetaobject.cpp
+   src/uavobjects/uavdataobject.cpp
+   src/uavobjects/uavobjectmanager.cpp
 )
 
 ## Declare a cpp executable

@@ -27,14 +27,6 @@
 // Macros
 #define SET_BITS(var, shift, value, mask) var = (var & ~(mask << shift)) | (value << shift);
 
-#define UAVOBJ_FLT_ACCESS_SHIFT				0
-#define UAVOBJ_GCS_ACCESS_SHIFT				1
-#define UAVOBJ_FLT_TELEMETRY_ACKED_SHIFT		2
-#define UAVOBJ_GCS_TELEMETRY_ACKED_SHIFT		3
-#define UAVOBJ_FLT_TELEMETRY_UPDATE_MODE_SHIFT		4
-#define UAVOBJ_GCS_TELEMETRY_UPDATE_MODE_SHIFT		6
-#define UAVOBJ_UPDATE_MODE_MASK				0x3
-
 using namespace openpilot;
 
 /** Constructor
@@ -54,7 +46,7 @@ UAVObject::UAVObject(uint32_t objID, bool isSingleInst, const std::string &name)
  */
 void UAVObject::initialize(uint32_t instID)
 {
-	boost::recursive_timed_mutex::scoped_lock(mutex);
+	boost::recursive_timed_mutex::scoped_lock lock(mutex);
 
 	this->instID = instID;
 }
@@ -109,6 +101,7 @@ void UAVObject::updated()
 	objectUpdated(this);
 }
 
+#if 0
 /** Lock mutex of this object
 */
 void UAVObject::lock()
@@ -139,56 +132,23 @@ boost::recursive_timed_mutex *UAVObject::getMutex()
 {
 	return &mutex;
 }
+#endif
 
 /** Return a string with the object information (only the header)
  */
-std:string UAVObject::toStringBrief()
+std::string UAVObject::toString()
 {
-	std::string sout << getName() <<
+	std::ostringstream sout;
+
+	sout << getName() <<
 		" (ID: " << getObjID() <<
 		", InstID: " << getInstID() <<
 		"NumBytes: " << getNumBytes() <<
 		"SInst: " << isSingleInstance() <<
 		")" << std::endl;
-	return sout;
+
+	return sout.str();
 }
-
-#if 0
-/** Pack the object data into a byte array
- * @returns The number of bytes copied
- */
-ssize_t UAVObject::serialize(uint8_t *dataOut)
-{
-	QMutexLocker locker(mutex);
-	qint32 offset = 0;
-
-	for (int n = 0; n < fields.length(); ++n) {
-	    fields[n]->pack(&dataOut[offset]);
-	    offset += fields[n]->getNumBytes();
-	}
-
-	return numBytes;
-}
-
-/** Unpack the object data from a byte array
- * @returns The number of bytes copied
- */
-ssize_t UAVObject::desirialize(const uint8_t *dataIn)
-{
-	QMutexLocker locker(mutex);
-	qint32 offset = 0;
-
-	for (int n = 0; n < fields.length(); ++n) {
-	    fields[n]->unpack(&dataIn[offset]);
-	    offset += fields[n]->getNumBytes();
-	}
-
-	objectUnpacked(this); // trigger object updated event
-	objectUpdated(this);
-
-	return numBytes;
-}
-#endif
 
 /** Initialize a UAVObjMetadata object.
  * \param[in] metadata The metadata object
