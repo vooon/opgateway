@@ -83,7 +83,7 @@ $(NAME)::DataFields $(NAME)::getData()
  */
 void $(NAME)::setData(const DataFields& data)
 {
-	boost::recursive_mutex::scoped_lock lock(mutex);
+	boost::recursive_timed_mutex::scoped_lock lock(mutex);
 	// Get metadata
 	Metadata mdata = getMetadata();
 	// Update object if the access mode permits
@@ -100,7 +100,7 @@ void $(NAME)::setData(const DataFields& data)
  * Do not use this function directly to create new instances, the
  * UAVObjectManager should be used instead.
  */
-UAVDataObject *$(NAME)::clone(quint32 instID)
+UAVDataObject *$(NAME)::clone(uint32_t instID)
 {
     $(NAME) *obj = new $(NAME)();
     obj->initialize(instID, this->getMetaObject());
@@ -125,7 +125,7 @@ $(NAME) *$(NAME)::GetInstance(UAVObjectManager *objMngr, uint32_t instID)
 /** Serialization method
  * TODO: implement byte swapping for Big Endian hosts
  */
-ssize_t $(NAME)::serialization(uint8_t *dataOut)
+ssize_t $(NAME)::serialize(uint8_t *dataOut)
 {
 	memcpy(dataOut, &data, sizeof(data));
 	// XXX TODO XXX
@@ -135,7 +135,7 @@ ssize_t $(NAME)::serialization(uint8_t *dataOut)
 /** Deserialization method
  * TODO: implement byte swapping for Big Endian hosts
  */
-ssize_t $(NAME)::deserialization(const uint8_t *dataIn)
+ssize_t $(NAME)::deserialize(const uint8_t *dataIn)
 {
 	memcpy(&data, dataIn, sizeof(data));
 	// XXX TODO XXX
