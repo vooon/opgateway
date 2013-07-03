@@ -1,5 +1,15 @@
+/**
+ * OpenPilot to ROS gateway and uavtalk relay
+ */
 
-int main(int argv, char *argc[])
+#include "ros/ros.h"
+
+int main(int argc, char **argv)
 {
+	ros::init(argc, argv, "opgateway");
+	ros::NodeHandle nh;
+
+
+	ros::spin();
 	return 0;
 }
