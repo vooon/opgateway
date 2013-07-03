@@ -141,10 +141,10 @@ std::string UAVObject::toString()
 	std::ostringstream sout;
 
 	sout << getName() <<
-		" (ID: " << getObjID() <<
+		" (ID: 0x" << std::hex << getObjID() << std::dec <<
 		", InstID: " << getInstID() <<
-		"NumBytes: " << getNumBytes() <<
-		"SInst: " << isSingleInstance() <<
+		", NumBytes: " << getNumBytes() <<
+		", SInst: " << isSingleInstance() <<
 		")" << std::endl;
 
 	return sout.str();

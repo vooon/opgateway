@@ -41,6 +41,8 @@ $(NAME)::$(NAME)(): UAVDataObject(OBJID, ISSINGLEINST, ISSETTINGS, NAME)
 {
 	// Initialize object
 	setDefaultFieldValues();
+
+	numBytes = NUMBYTES;
 }
 
 /** Get the default metadata for this object

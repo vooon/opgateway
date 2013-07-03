@@ -27,6 +27,11 @@
 
 #include "uavobjectmanager.h"
 
+namespace openpilot
+{
+
 void UAVObjectsInitialize(UAVObjectManager *objMngr);
+
+} // namespace openpilot
 
 #endif // UAVOBJECTSINIT_H

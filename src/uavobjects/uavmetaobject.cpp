@@ -38,6 +38,8 @@ UAVMetaObject::UAVMetaObject(uint32_t objID, const std::string &name, UAVObject 
 	UAVObject::initialize(0);
 	// Setup metadata of parent
 	parentMetadata = parent->getDefaultMetadata();
+
+	numBytes = sizeof(Metadata);
 }
 
 /** Get the parent object
