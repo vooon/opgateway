@@ -130,7 +130,7 @@ target_link_libraries(opgateway_node
 #############
 
 ## Add gtest based cpp test target and link libraries
-catkin_add_gtest(uavobjects-test test/test_uavpbjects.cpp)
+catkin_add_gtest(uavobjects-test test/test_uavobjects.cpp)
 if(TARGET uavobjects-test)
    target_link_libraries(uavobjects-test uavobjects)
 endif()
