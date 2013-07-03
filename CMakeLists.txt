@@ -7,7 +7,7 @@ project(opgateway)
 find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs std_msgs message_generation)
 
 ## System dependencies are found with CMake's conventions
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system thread timer)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -64,9 +64,9 @@ include_directories(include
 )
 
 ## Declare a cpp library
-# add_library(opgateway
-#   src/${PROJECT_NAME}/opgateway.cpp
-# )
+add_library(uavobjects
+   src/uavobjects/uavobject.cpp
+)
 
 ## Declare a cpp executable
 add_executable(opgateway_node src/opgateway_node.cpp)
@@ -74,6 +74,7 @@ add_executable(opgateway_node src/opgateway_node.cpp)
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(opgateway_node opgateway_generate_messages_cpp)
+add_dependencies(opgateway_node uavobjects)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(opgateway_node
