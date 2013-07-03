@@ -9,7 +9,6 @@ find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs std_msgs message_gene
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system thread timer)
 
-
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -48,7 +47,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
    INCLUDE_DIRS include
-#  LIBRARIES opgateway
+   #LIBRARIES uavobjects
    CATKIN_DEPENDS roscpp sensor_msgs std_msgs message_runtime
    DEPENDS system_lib
 )
@@ -57,10 +56,15 @@ catkin_package(
 ## Build ##
 ###########
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/genuavobj.cmake)
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include
-  ${catkin_INCLUDE_DIRS}
+include_directories(
+   include
+   src/uavobjects
+   ${catkin_INCLUDE_DIRS}
+   ${UAVOBJ_SYNTETICS_DIR}
 )
 
 ## Declare a cpp library
@@ -69,6 +73,7 @@ add_library(uavobjects
    src/uavobjects/uavmetaobject.cpp
    src/uavobjects/uavdataobject.cpp
    src/uavobjects/uavobjectmanager.cpp
+   ${UAVOBJ_SYNTETICS_SOURCES}
 )
 
 ## Declare a cpp executable
@@ -81,6 +86,7 @@ add_dependencies(opgateway_node uavobjects)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(opgateway_node
+  uavobjects
   ${catkin_LIBRARIES}
 )
 
@@ -124,10 +130,10 @@ target_link_libraries(opgateway_node
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_opgateway.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+catkin_add_gtest(uavobjects-test test/test_uavpbjects.cpp)
+if(TARGET uavobjects-test)
+   target_link_libraries(uavobjects-test uavobjects)
+endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
