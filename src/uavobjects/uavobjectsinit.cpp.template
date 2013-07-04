@@ -26,13 +26,12 @@
 
 $(OBJINC)
 
-using namespace openpilot;
+//using namespace openpilot;
 
-/**
- * Function used to initialize the first instance of each object.
+/** Function used to initialize the first instance of each object.
  * This file is automatically updated by the UAVObjectGenerator.
  */
-void UAVObjectsInitialize(UAVObjectManager *objMngr)
+void openpilot::UAVObjectsInitialize(openpilot::UAVObjectManager *objMngr)
 {
 $(OBJINIT)
 }

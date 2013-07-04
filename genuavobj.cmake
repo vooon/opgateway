@@ -19,6 +19,8 @@ foreach(fl ${UAVOBJ_DEFINITIONS})
 	list(APPEND UAVOBJ_SYNTETICS_SOURCES "${UAVOBJ_SYNTETICS_DIR}/${basename}.cpp")
 endforeach(fl)
 
+list(APPEND UAVOBJ_SYNTETICS_SOURCES "${UAVOBJ_SYNTETICS_DIR}/uavobjectsinit.cpp")
+
 #foreach(f ${UAVOBJ_SYNTETICS_SOURCES})
 #	message(${f})
 #endforeach(f)

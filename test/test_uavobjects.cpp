@@ -13,47 +13,81 @@ using namespace openpilot;
 
 
 UAVObjectManager *objMngr;
-int updated, upauto, upmanual, updreq, newobj, newinst;
+
+boost::recursive_timed_mutex mutex;
+int updated, upauto, upmanual, upreq, newobj, newinst;
 
 
 void objUpdated(UAVObject *obj)
 {
+	boost::recursive_timed_mutex::scoped_lock lock(mutex);
 	updated++;
-	std::cout << "[Updated] " << obj->toString() << std::endl;
+	std::cout << "[Updated] " << obj->toString();
+
+	UAVDataObject *dobj = dynamic_cast<UAVDataObject *>(obj);
+	if (dobj)
+		std::cout << dobj->toStringData();
 }
 
 void objUpdatedAuto(UAVObject *obj)
 {
+	boost::recursive_timed_mutex::scoped_lock lock(mutex);
 	upauto++;
-	std::cout << "[Auto] " << obj->toString() << std::endl;
+	std::cout << "[Auto] " << obj->toString();
+
+	UAVDataObject *dobj = dynamic_cast<UAVDataObject *>(obj);
+	if (dobj)
+		std::cout << dobj->toStringData();
 }
 
 void objUpdatedManual(UAVObject *obj)
 {
+	boost::recursive_timed_mutex::scoped_lock lock(mutex);
 	upmanual++;
-	std::cout << "[Manual] " << obj->toString() << std::endl;
+	std::cout << "[Manual] " << obj->toString();
+
+	UAVDataObject *dobj = dynamic_cast<UAVDataObject *>(obj);
+	if (dobj)
+		std::cout << dobj->toStringData();
 }
 
 void updRequested(UAVObject *obj)
 {
-	newinst++;
-	std::cout << "[Object Requested] " << obj->toString() << std::endl;
+	boost::recursive_timed_mutex::scoped_lock lock(mutex);
+	upreq++;
+	std::cout << "[Object Requested] " << obj->toString();
+
+	UAVDataObject *dobj = dynamic_cast<UAVDataObject *>(obj);
+	if (dobj)
+		std::cout << dobj->toStringData();
 }
 
 void newObject(UAVObject *obj)
 {
+	boost::recursive_timed_mutex::scoped_lock lock(mutex);
 	newobj++;
-	std::cout << "[NEW Object] " << obj->toString() << std::endl;
+	std::cout << "[NEW Object] " << obj->toString();
+
+	UAVDataObject *dobj = dynamic_cast<UAVDataObject *>(obj);
+	if (dobj)
+		std::cout << dobj->toStringData();
 }
 
 void newInstance(UAVObject *obj)
 {
-	std::cout << "[NEW Instance] " << obj->toString() << std::endl;
+	boost::recursive_timed_mutex::scoped_lock lock(mutex);
+	newinst++;
+	std::cout << "[NEW Instance] " << obj->toString();
+
+	UAVDataObject *dobj = dynamic_cast<UAVDataObject *>(obj);
+	if (dobj)
+		std::cout << dobj->toStringData();
 }
 
 
 TEST(UAVObjManager, registerTwo)
 {
+	boost::system_time t;
 	objMngr = new UAVObjectManager();
 
 	newobj = 0;
@@ -70,7 +104,10 @@ TEST(UAVObjManager, registerTwo)
 
 	objMngr->registerObject(obj1);
 
-	//EXPECT_EQ(newobj, 1);
+	t = boost::get_system_time() +
+		boost::posix_time::milliseconds(100);
+	mutex.timed_lock(t);
+	EXPECT_GT(newobj, 0);
 
 	AccessoryDesired *obj2 = new AccessoryDesired();
 	obj2->objectUpdated.connect(objUpdated);
@@ -80,11 +117,42 @@ TEST(UAVObjManager, registerTwo)
 
 	objMngr->registerObject(obj2);
 
-	//EXPECT_EQ(newinst, 1);
+	t = boost::get_system_time() +
+		boost::posix_time::milliseconds(100);
+	mutex.timed_lock(t);
+	EXPECT_GT(newinst, 0);
+}
 
-	delete obj1;
-	delete obj2;
-	delete objMngr;
+TEST(UAVObjManager, registerAll)
+{
+	//objMngr = new UAVObjectManager();
+
+	UAVObjectsInitialize(objMngr);
+}
+
+TEST(UAVObjManager, signals)
+{
+	//objMngr = new UAVObjectManager();
+
+	AccessoryDesired *obj1 = AccessoryDesired::GetInstance(objMngr, 0);
+	AccessoryDesired *obj2 = AccessoryDesired::GetInstance(objMngr, 1);
+
+	ASSERT_NE(obj1, (void*)NULL);
+	ASSERT_NE(obj2, (void*)NULL);
+
+	AccessoryDesired::DataFields data = obj1->getData();
+	UAVObject::Metadata mdata = obj1->getMetadata();
+
+        mdata.gcsTelemetryUpdatePeriod = 123;
+        obj1->setMetadata(mdata);
+
+	std::cout << "[Meta of obj1]\n";
+	std::cout << obj1->getMetaObject()->toString();
+	std::cout << obj1->getMetaObject()->toStringData();
+
+	std::cout << "[Meta of obj2]\n";
+	std::cout << obj2->getMetaObject()->toString();
+	std::cout << obj2->getMetaObject()->toStringData();
 }
 
 int main(int argc, char **argv){
