@@ -76,6 +76,11 @@ add_library(uavobjects
    ${UAVOBJ_SYNTETICS_SOURCES}
 )
 
+add_library(uavtalk
+   src/uavtalk/uavtalk.cpp
+)
+add_dependencies(uavtalk uavobjects)
+
 ## Declare a cpp executable
 add_executable(opgateway_node src/opgateway_node.cpp)
 
@@ -83,10 +88,12 @@ add_executable(opgateway_node src/opgateway_node.cpp)
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(opgateway_node opgateway_generate_messages_cpp)
 add_dependencies(opgateway_node uavobjects)
+add_dependencies(opgateway_node uavtalk)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(opgateway_node
   uavobjects
+  uavtalk
   ${catkin_LIBRARIES}
 )
 
@@ -134,6 +141,11 @@ catkin_add_gtest(uavobjects-test test/test_uavobjects.cpp)
 if(TARGET uavobjects-test)
    target_link_libraries(uavobjects-test uavobjects)
 endif()
+
+#catkin_add_gtest(uavtalk-test test/test_uavtalk.cpp)
+#if(TARGET uavtalktest)
+#   target_link_libraries(uavtalk-test uavtalk)
+#endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
