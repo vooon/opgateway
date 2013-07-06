@@ -142,7 +142,10 @@ ssize_t $(NAME)::deserialize(const uint8_t *dataIn)
 	memcpy(&data, dataIn, sizeof(data));
 	// XXX TODO XXX
 
-	// emit dataDeserialized()
+	// emit signals
+	objectUnpacked(this);
+	objectUpdated(this);
+
 	return sizeof(data);
 }
 

@@ -127,6 +127,7 @@ public:
 	void requestUpdate();
 	void updated();
 
+	boost::signals2::signal<void(UAVObject *)> objectUnpacked;
 	boost::signals2::signal<void(UAVObject *)> objectUpdated;
 	boost::signals2::signal<void(UAVObject *)> objectUpdatedAuto;
 	boost::signals2::signal<void(UAVObject *)> objectUpdatedManual;

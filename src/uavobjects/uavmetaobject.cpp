@@ -109,6 +109,7 @@ ssize_t UAVMetaObject::deserialize(const uint8_t *dataIn)
 
 	memcpy(&parentMetadata, dataIn, sizeof(parentMetadata));
 
+	objectUnpacked(this); // emit unpacked event
 	objectUpdated(this); // emit updated event
 
 	return sizeof(parentMetadata);
