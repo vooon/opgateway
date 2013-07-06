@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * @file       uavtalk.h
+ * @file       uavtalkiobase.h
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
  * @author     Vladimir Ermakov, Copyright (C) 2013.
  * @brief The UAVTalk protocol
