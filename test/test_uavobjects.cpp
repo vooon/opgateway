@@ -15,7 +15,7 @@ using namespace openpilot;
 UAVObjectManager *objMngr;
 
 boost::recursive_timed_mutex mutex;
-int updated, upauto, upmanual, upreq, newobj, newinst;
+int updated, upauto, upmanual, upreq, newobj, newinst, bind_updated;
 
 
 void objUpdated(UAVObject *obj)
@@ -153,6 +153,52 @@ TEST(UAVObjManager, signals)
 	std::cout << "[Meta of obj2]\n";
 	std::cout << obj2->getMetaObject()->toString();
 	std::cout << obj2->getMetaObject()->toStringData();
+}
+
+void bind_objUpdated(UAVObject *obj)
+{
+	boost::recursive_timed_mutex::scoped_lock lock(mutex);
+	bind_updated++;
+	std::cout << "[BIND Updated] " << obj->toString();
+
+	UAVDataObject *dobj = dynamic_cast<UAVDataObject *>(obj);
+	if (dobj)
+		std::cout << dobj->toStringData();
+
+}
+
+TEST(UAVObjManager, bind_connect_disconneect)
+{
+	boost::system_time t;
+	AccessoryDesired::DataFields data;
+	AccessoryDesired *obj1 = AccessoryDesired::GetInstance(objMngr, 0);
+
+	ASSERT_NE(obj1, (void*)NULL);
+
+	bind_updated = 0;
+	obj1->objectUpdated.connect(boost::bind(bind_objUpdated, _1));
+
+	data = obj1->getData();
+	data.AccessoryVal++;
+	obj1->setData(data);
+
+	t = boost::get_system_time() +
+		boost::posix_time::milliseconds(100);
+	mutex.timed_lock(t);
+
+	EXPECT_EQ(bind_updated, 1);
+
+	obj1->objectUpdated.disconnect(boost::bind(bind_objUpdated, _1));
+
+	data = obj1->getData();
+	data.AccessoryVal++;
+	obj1->setData(data);
+
+	t = boost::get_system_time() +
+		boost::posix_time::milliseconds(100);
+	mutex.timed_lock(t);
+
+	EXPECT_EQ(bind_updated, 1);
 }
 
 int main(int argc, char **argv){
