@@ -136,10 +136,12 @@ void UAVObjectManager::addObject(UAVObject *obj)
 	newObject(obj); // emit signal
 }
 
-/*
- *
+/** Get all objects map
  */
-
+UAVObjectManager::objects_map UAVObjectManager::getObjects()
+{
+	return objects;
+}
 
 /** Get a specific object given its name and instance ID
  * @returns The object is found or NULL if not
