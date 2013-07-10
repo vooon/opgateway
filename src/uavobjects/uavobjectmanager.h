@@ -42,7 +42,7 @@ public:
 	typedef std::map<uint32_t, inst_vec> objects_map;
 
 	bool registerObject(UAVDataObject *obj);
-	//objects_map getObjects();
+	objects_map getObjects();
 	//std::map<uint32_t, std::vector<UAVDataObject *> > getDataObjects();
 	//std::map<uint32_t, std::vector<UAVMetaObject *> > getMetaObjects();
 	UAVObject *getObject(const std::string &name, uint32_t instId = 0);

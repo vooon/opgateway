@@ -133,7 +133,7 @@ public:
 	boost::signals2::signal<void(UAVObject *)> objectUpdatedManual;
 	boost::signals2::signal<void(UAVObject *)> objectUpdatedPeriodic;
 	boost::signals2::signal<void(UAVObject *)> updateRequested;
-	boost::signals2::signal<void(UAVObject *)> transactionCompleted;
+	boost::signals2::signal<void(UAVObject *, bool success)> transactionCompleted;
 	boost::signals2::signal<void(UAVObject *)> newInstance;
 
 protected:
