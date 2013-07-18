@@ -32,30 +32,30 @@
  */
 Telemetry::Telemetry(UAVTalk *utalk, UAVObjectManager *objMngr)
 {
-    this->utalk   = utalk;
-    this->objMngr = objMngr;
+	this->utalk   = utalk;
+	this->objMngr = objMngr;
 
-    // Process all objects in the list
-    UAVObjectManager::objects_map objs = objMngr->getObjects();
-    for (UAVObjectManager::objects_map::iterator itr = objs.start(); itr < objs.end(); ++itr) {
-        registerObject(itr->second[0]); // we only need to register one instance per object type
-    }
+	// Process all objects in the list
+	UAVObjectManager::objects_map objs = objMngr->getObjects();
+	for (UAVObjectManager::objects_map::iterator itr = objs.start(); itr < objs.end(); ++itr) {
+		registerObject(itr->second[0]); // we only need to register one instance per object type
+	}
 
-    // Listen to new object creations
-    objMngr->newObject.connect(boost::bind(&Telemetry::newObject, _1));
-    objMngr->newInstance.connect(boost::bind(&Telemetry::newInstance, _1));
-    // Listen to transaction completions
-    utalk->transactionCompleted.connect(boost::bind(&Telemetry::transactionCompleted, this, _1, _2));
-    // Get GCS stats object
-    gcsStatsObj = GCSTelemetryStats::GetInstance(objMngr);
-    // Setup and start the periodic timer
-    timeToNextUpdateMs = 0;
-    //updateTimer = new QTimer(this);
-    //connect(updateTimer, SIGNAL(timeout()), this, SLOT(processPeriodicUpdates()));
-    //updateTimer->start(1000);
-    // Setup and start the stats timer
-    txErrors  = 0;
-    txRetries = 0;
+	// Listen to new object creations
+	objMngr->newObject.connect(boost::bind(&Telemetry::newObject, this, _1));
+	objMngr->newInstance.connect(boost::bind(&Telemetry::newInstance, this, _1));
+	// Listen to transaction completions
+	utalk->transactionCompleted.connect(boost::bind(&Telemetry::transactionCompleted, this, _1, _2));
+	// Get GCS stats object
+	gcsStatsObj = GCSTelemetryStats::GetInstance(objMngr);
+	// Setup and start the periodic timer
+	timeToNextUpdateMs = 0;
+	//updateTimer = new QTimer(this);
+	//connect(updateTimer, SIGNAL(timeout()), this, SLOT(processPeriodicUpdates()));
+	//updateTimer->start(1000);
+	// Setup and start the stats timer
+	txErrors  = 0;
+	txRetries = 0;
 }
 
 Telemetry::~Telemetry()
@@ -341,6 +341,7 @@ void Telemetry::processObjectQueue()
 	UAVObject::UpdateMode updateMode = UAVObject::GetGcsTelemetryUpdateMode(metadata);
 	if ((objInfo.event != EV_UNPACKED) &&
 			((objInfo.event != EV_UPDATED_PERIODIC) || (updateMode != UAVObject::UPDATEMODE_THROTTLED))) {
+
 		std::map<uint32_t, ObjectTransactionInfo *>::iterator itr = transMap.find(objInfo.obj->getObjID());
 		if (itr != transMap.end()) {
 			ROS_DEBUG_STREAM("!!!!!! Making request for an object: " << objInfo.obj->getName() << " for which a request is already in progress!!!!!!");
