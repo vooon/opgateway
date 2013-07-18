@@ -28,16 +28,20 @@
 #include <ros/console.h>
 #include <stdlib.h>
 
+using namespace openpilot;
+
 /** Constructor
  */
-Telemetry::Telemetry(UAVTalk *utalk, UAVObjectManager *objMngr)
+Telemetry::Telemetry(boost::asio::io_service &io, UAVTalk *utalk, UAVObjectManager *objMngr) :
+	io_service(io),
+	updateTimer(io_service)
 {
 	this->utalk   = utalk;
 	this->objMngr = objMngr;
 
 	// Process all objects in the list
 	UAVObjectManager::objects_map objs = objMngr->getObjects();
-	for (UAVObjectManager::objects_map::iterator itr = objs.start(); itr < objs.end(); ++itr) {
+	for (UAVObjectManager::objects_map::iterator itr = objs.begin(); itr != objs.end(); ++itr) {
 		registerObject(itr->second[0]); // we only need to register one instance per object type
 	}
 
@@ -50,9 +54,8 @@ Telemetry::Telemetry(UAVTalk *utalk, UAVObjectManager *objMngr)
 	gcsStatsObj = GCSTelemetryStats::GetInstance(objMngr);
 	// Setup and start the periodic timer
 	timeToNextUpdateMs = 0;
-	//updateTimer = new QTimer(this);
-	//connect(updateTimer, SIGNAL(timeout()), this, SLOT(processPeriodicUpdates()));
-	//updateTimer->start(1000);
+	updateTimer.expires_from_now(boost::posix_time::seconds(1));
+	updateTimer.async_wait(boost::bind(&Telemetry::processPeriodicUpdates, this, boost::asio::placeholders::error));
 	// Setup and start the stats timer
 	txErrors  = 0;
 	txRetries = 0;
@@ -60,7 +63,9 @@ Telemetry::Telemetry(UAVTalk *utalk, UAVObjectManager *objMngr)
 
 Telemetry::~Telemetry()
 {
+	updateTimer.cancel();
 	for (std::map<uint32_t, ObjectTransactionInfo *>::iterator itr = transMap.begin(); itr != transMap.end(); ++itr) {
+		itr->second->timer.cancel();
 		delete itr->second;
 	}
 }
@@ -215,7 +220,7 @@ void Telemetry::transactionCompleted(UAVObject *obj, bool success)
 	if (itr != transMap.end()) {
 		ObjectTransactionInfo *transInfo = itr->second;
 		// Remove this transaction as it's complete.
-		//transInfo->timer->stop();
+		transInfo->timer.cancel();
 		transMap.erase(itr);
 		delete transInfo;
 		// Send signal
@@ -229,9 +234,11 @@ void Telemetry::transactionCompleted(UAVObject *obj, bool success)
 
 /** Called when a transaction is not completed within the timeout period (timer event)
  */
-void Telemetry::transactionTimeout(ObjectTransactionInfo *transInfo)
+void Telemetry::transactionTimeout(boost::system::error_code error, ObjectTransactionInfo *transInfo)
 {
-	//transInfo->timer->stop();
+	if (error)
+		return;
+
 	// Check if more retries are pending
 	if (transInfo->retriesRemaining > 0) {
 		--transInfo->retriesRemaining;
@@ -239,8 +246,6 @@ void Telemetry::transactionTimeout(ObjectTransactionInfo *transInfo)
 		++txRetries;
 
 	} else {
-		// Stop the timer.
-		//transInfo->timer->stop();
 		// Terminate transaction
 		utalk->cancelTransaction(transInfo->obj);
 		// Send signal
@@ -267,7 +272,9 @@ void Telemetry::processObjectTransaction(ObjectTransactionInfo *transInfo)
 
 	// Start timer if a response is expected
 	if (transInfo->objRequest || transInfo->acked) {
-		//transInfo->timer->start(REQ_TIMEOUT_MS);
+		transInfo->timer.expires_from_now(boost::posix_time::milliseconds(REQ_TIMEOUT_MS));
+		transInfo->timer.async_wait(boost::bind(&Telemetry::transactionTimeout, this,
+					boost::asio::placeholders::error, transInfo));
 	} else {
 		// Otherwise, remove this transaction as it's complete.
 		transMap.erase(transInfo->obj->getObjID());
@@ -292,7 +299,7 @@ void Telemetry::processObjectUpdates(UAVObject *obj, EventMask event, bool allIn
 		} else {
 			++txErrors;
 			obj->transactionCompleted(obj, false); // emit
-			ROS_WARNING("Telemetry: priority event queue is full, event lost (%s)", obj->getName());
+			ROS_WARN_STREAM("Telemetry: priority event queue is full, event lost (" << obj->getName() << ")");
 		}
 
 	} else {
@@ -316,9 +323,11 @@ void Telemetry::processObjectQueue()
 	ObjectQueueInfo objInfo;
 
 	if (!objPriorityQueue.empty()) {
-		objInfo = objPriorityQueue.pop();
+		objInfo = objPriorityQueue.front();
+		objPriorityQueue.pop();
 	} else if (!objQueue.empty()) {
-		objInfo = objQueue.pop();
+		objInfo = objQueue.front();
+		objQueue.pop();
 	} else {
 		return;
 	}
@@ -327,7 +336,10 @@ void Telemetry::processObjectQueue()
 	// (used to establish the connection)
 	GCSTelemetryStats::DataFields gcsStats = gcsStatsObj->getData();
 	if (gcsStats.Status != GCSTelemetryStats::STATUS_CONNECTED) {
-		objQueue.clear();
+		// clear queue
+		while (!objQueue.empty())
+			objQueue.pop();
+
 		if (objInfo.obj->getObjID() != GCSTelemetryStats::OBJID
 				&& objInfo.obj->getObjID() != OPLinkSettings::OBJID
 				&& objInfo.obj->getObjID() != ObjectPersistence::OBJID) {
@@ -348,7 +360,7 @@ void Telemetry::processObjectQueue()
 		}
 
 		UAVObject::Metadata metadata     = objInfo.obj->getMetadata();
-		ObjectTransactionInfo *transInfo = new ObjectTransactionInfo();
+		ObjectTransactionInfo *transInfo = new ObjectTransactionInfo(io_service);
 		transInfo->obj                   = objInfo.obj;
 		transInfo->allInstances          = objInfo.allInstances;
 		transInfo->retriesRemaining      = MAX_RETRIES;
@@ -359,7 +371,6 @@ void Telemetry::processObjectQueue()
 		} else if (objInfo.event == EV_UPDATE_REQ) {
 			transInfo->objRequest = true;
 		}
-		transInfo->telem = this;
 
 		// Insert the transaction into the transaction map.
 		transMap[objInfo.obj->getObjID()] = transInfo;
@@ -386,20 +397,20 @@ void Telemetry::processObjectQueue()
 /** Check is any objects are pending for periodic updates
  * TODO: Clean-up
  */
-void Telemetry::processPeriodicUpdates()
+void Telemetry::processPeriodicUpdates(boost::system::error_code error)
 {
 	boost::recursive_mutex::scoped_lock lock(mutex);
 
-	// Stop timer
-	//updateTimer->stop();
+	if (error)
+		return;
 
 	// Iterate through each object and update its timer, if zero then transmit object.
 	// Also calculate smallest delay to next update (will be used for setting timeToNextUpdateMs)
 	int32_t minDelay  = MAX_UPDATE_PERIOD_MS;
 	ObjectTimeInfo *objinfo;
-	int32_t elapsedMs = 0;
-	//QTime time;
 	int32_t offset;
+	boost::posix_time::ptime start_time, end_time;
+	boost::posix_time::time_duration elapsed;
 
 	for (int n = 0; n < objList.size(); ++n) {
 		objinfo = &objList[n];
@@ -412,11 +423,12 @@ void Telemetry::processPeriodicUpdates()
 				offset = (-objinfo->timeToNextUpdateMs) % objinfo->updatePeriodMs;
 				objinfo->timeToNextUpdateMs = objinfo->updatePeriodMs - offset;
 				// Send object
-				//time.start();
+				start_time = boost::posix_time::microsec_clock::universal_time();
 				processObjectUpdates(objinfo->obj, EV_UPDATED_PERIODIC, true, false);
-				//elapsedMs = time.elapsed();
+				end_time = boost::posix_time::microsec_clock::universal_time();
+				elapsed = end_time - start_time;
 				// Update timeToNextUpdateMs with the elapsed delay of sending the object;
-				timeToNextUpdateMs += elapsedMs;
+				timeToNextUpdateMs += elapsed.total_milliseconds();
 			}
 			// Update minimum delay
 			if (objinfo->timeToNextUpdateMs < minDelay) {
@@ -434,7 +446,8 @@ void Telemetry::processPeriodicUpdates()
 	timeToNextUpdateMs = minDelay;
 
 	// Restart timer
-	//updateTimer->start(timeToNextUpdateMs);
+	updateTimer.expires_from_now(boost::posix_time::milliseconds(timeToNextUpdateMs));
+	updateTimer.async_wait(boost::bind(&Telemetry::processPeriodicUpdates, this, boost::asio::placeholders::error));
 }
 
 Telemetry::TelemetryStats Telemetry::getStats()
@@ -519,31 +532,13 @@ void Telemetry::newInstance(UAVObject *obj)
 	registerObject(obj);
 }
 
-ObjectTransactionInfo::ObjectTransactionInfo(QObject *parent) : QObject(parent)
+ObjectTransactionInfo::ObjectTransactionInfo(boost::asio::io_service &io) :
+	timer(io)
 {
 	obj = 0;
 	allInstances     = false;
 	objRequest       = false;
 	retriesRemaining = 0;
 	acked = false;
-	telem = 0;
-	// Setup transaction timer
-	//timer = new QTimer(this);
-	//timer->stop();
-	//connect(timer, SIGNAL(timeout()), this, SLOT(timeout()));
-}
-
-ObjectTransactionInfo::~ObjectTransactionInfo()
-{
-	telem = 0;
-	//timer->stop();
-	//delete timer;
-}
-
-void ObjectTransactionInfo::timeout()
-{
-	if (!telem) {
-		telem->transactionTimeout(this);
-	}
 }
 

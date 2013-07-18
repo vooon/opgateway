@@ -24,8 +24,9 @@
 #ifndef TELEMETRY_H
 #define TELEMETRY_H
 
-#include <boost/lockfree/queue.hpp>
-#include <boost/shared_ptr.hpp>
+#include <boost/pending/queue.hpp>
+#include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "uavtalk.h"
 #include "uavobjectmanager.h"
 #include "gcstelemetrystats.h"
@@ -35,19 +36,14 @@ namespace openpilot
 
 class ObjectTransactionInfo {
 public:
-	ObjectTransactionInfo();
-	~ObjectTransactionInfo();
+	ObjectTransactionInfo(boost::asio::io_service &io);
 
 	UAVObject *obj;
 	bool allInstances;
 	bool objRequest;
 	int32_t retriesRemaining;
 	bool acked;
-	boost::shared_ptr<Telemetry *> telem;
 	boost::asio::deadline_timer timer;
-
-private: // slots:
-	void timeout();
 };
 
 class Telemetry {
@@ -64,11 +60,10 @@ public:
 		uint32_t txRetries;
 	} TelemetryStats;
 
-	Telemetry(UAVTalk *utalk, UAVObjectManager *objMngr);
+	Telemetry(boost::asio::io_service &io, UAVTalk *utalk, UAVObjectManager *objMngr);
 	~Telemetry();
 	TelemetryStats getStats();
 	void resetStats();
-	void transactionTimeout(ObjectTransactionInfo *info);
 
 private:
 	// Constants
@@ -103,16 +98,16 @@ private:
 	} ObjectQueueInfo;
 
 	// Variables
+	boost::asio::io_service &io_service;
 	UAVObjectManager *objMngr;
 	UAVTalk *utalk;
 	GCSTelemetryStats *gcsStatsObj;
 	std::vector<ObjectTimeInfo> objList;
-	boost::lockfree::queue<ObjectQueueInfo> objQueue;
-	boost::lockfree::queue<ObjectQueueInfo> objPriorityQueue;
+	boost::queue<ObjectQueueInfo> objQueue;
+	boost::queue<ObjectQueueInfo> objPriorityQueue;
 	std::map<uint32_t, ObjectTransactionInfo *> transMap;
-	boost::recursuve_mutex mutex;
-	//QTimer *updateTimer;
-	//QTimer *statsTimer;
+	boost::recursive_mutex mutex;
+	boost::asio::deadline_timer updateTimer;
 	int32_t timeToNextUpdateMs;
 	uint32_t txErrors;
 	uint32_t txRetries;
@@ -135,8 +130,13 @@ private: // slots:
 	void updateRequested(UAVObject *obj);
 	void newObject(UAVObject *obj);
 	void newInstance(UAVObject *obj);
-	void processPeriodicUpdates();
 	void transactionCompleted(UAVObject *obj, bool success);
+
+	// timer handlers
+	void processPeriodicUpdates(boost::system::error_code ec);
+	void transactionTimeout(boost::system::error_code ec, ObjectTransactionInfo *info);
 };
+
+} // namespace openpilot
 
 #endif // TELEMETRY_H

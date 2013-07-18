@@ -7,7 +7,7 @@ project(opgateway)
 find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs std_msgs message_generation)
 
 ## System dependencies are found with CMake's conventions
-find_package(Boost REQUIRED COMPONENTS system thread timer)
+find_package(Boost REQUIRED COMPONENTS system thread timer date_time)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -78,6 +78,7 @@ add_library(uavobjects
 
 add_library(uavtalk
    src/uavtalk/uavtalk.cpp
+   src/uavtalk/telemetry.cpp
 )
 add_dependencies(uavtalk uavobjects)
 
