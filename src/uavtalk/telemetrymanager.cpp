@@ -30,6 +30,7 @@
 using namespace openpilot;
 
 TelemetryManager::TelemetryManager(UAVObjectManager *objMngr_) :
+	io_service(),
 	autopilotConnected(false),
 	objMngr(objMngr_)
 {
