@@ -63,6 +63,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/genuavobj.cmake)
 include_directories(
    include
    src/uavobjects
+   src/uavtalk
    ${catkin_INCLUDE_DIRS}
    ${UAVOBJ_SYNTETICS_DIR}
 )
@@ -81,6 +82,7 @@ add_library(uavtalk
    src/uavtalk/telemetry.cpp
    src/uavtalk/telemetrymonitor.cpp
    src/uavtalk/telemetrymanager.cpp
+   src/uavtalk/iodrivers/uavtalkserialio.cpp
 )
 add_dependencies(uavtalk uavobjects)
 
