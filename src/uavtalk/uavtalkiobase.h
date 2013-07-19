@@ -27,6 +27,7 @@
 #include <boost/bind.hpp>
 #include <boost/signals2.hpp>
 #include <boost/thread/thread.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 
 namespace openpilot
 {
@@ -34,9 +35,6 @@ namespace openpilot
 class UAVTalkIOBase
 {
 public:
-	UAVTalkIOBase();
-	~UAVTalkIOBase();
-
 	boost::signals2::signal<void(uint8_t *data, size_t lenght)> sig_read;
 	boost::signals2::signal<void()> sig_closed;
 

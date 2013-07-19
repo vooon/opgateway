@@ -22,8 +22,14 @@
 #ifndef UAVTALKIOSERIAL_H
 #define UAVTALKIOSERIAL_H
 
+/* Note: useful trics from
+ * http://gitorious.org/serial-port/serial-port/blobs/master/3_async/AsyncSerial.cpp
+ * I use read/write from AsyncSerialImpl.
+ */
+
 #include "uavtalkiobase.h"
 #include <boost/asio/serial_port.hpp>
+#include <boost/shared_array.hpp>
 
 namespace openpilot
 {
@@ -41,13 +47,19 @@ public:
 
 private:
 	boost::asio::io_service io_service;
-	boost::thread *io_service_thread;
+	boost::thread io_thread;
 	boost::asio::serial_port serial_dev;
 
 	static const size_t RX_BUFSIZE = 10 + 256 + 1;
 	uint8_t rx_buf[RX_BUFSIZE];
+	std::vector<uint8_t> tx_q;
+	boost::shared_array<uint8_t> tx_buf;
+	size_t tx_buf_size;
+	boost::recursive_mutex mutex;
 
+	void do_read(void);
 	void async_read_end(boost::system::error_code ec, size_t bytes_transfered);
+	void do_write(void);
 	void async_write_end(boost::system::error_code ec);
 };
 
