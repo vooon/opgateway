@@ -56,7 +56,7 @@ private: // slots:
 
 private:
 	boost::asio::io_service io_service;
-	boost::thread *io_service_thread;
+	boost::thread io_thread;
 	UAVObjectManager *objMngr;
 	UAVTalk *utalk;
 	Telemetry *telemetry;

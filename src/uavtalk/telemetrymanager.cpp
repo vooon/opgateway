@@ -35,7 +35,8 @@ TelemetryManager::TelemetryManager(UAVObjectManager *objMngr_) :
 	objMngr(objMngr_)
 {
 	// run io_service for uavtalk && telemetry timers
-	io_service_thread = new boost::thread(boost::bind(&boost::asio::io_service::run, &this->io_service));
+	boost::thread t(boost::bind(&boost::asio::io_service::run, &this->io_service));
+	io_thread.swap(t);
 }
 
 TelemetryManager::~TelemetryManager()
