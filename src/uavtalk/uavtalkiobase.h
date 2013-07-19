@@ -26,6 +26,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/signals2.hpp>
+#include <boost/thread/thread.hpp>
 
 namespace openpilot
 {
@@ -45,7 +46,6 @@ public:
 	virtual bool is_open() = 0;
 
 private:
-	boost::asio::io_service io_service;
 };
 
 } // namespace openpilot
