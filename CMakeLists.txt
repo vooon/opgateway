@@ -85,6 +85,10 @@ add_library(uavtalk
    src/uavtalk/iodrivers/uavtalkserialio.cpp
 )
 add_dependencies(uavtalk uavobjects)
+target_link_libraries(uavtalk
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
 
 ## Declare a cpp executable
 add_executable(opgateway_node src/opgateway_node.cpp)
@@ -100,6 +104,7 @@ target_link_libraries(opgateway_node
   uavobjects
   uavtalk
   ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
 )
 
 #############
@@ -147,10 +152,10 @@ if(TARGET uavobjects-test)
    target_link_libraries(uavobjects-test uavobjects)
 endif()
 
-#catkin_add_gtest(uavtalk-test test/test_uavtalk.cpp)
-#if(TARGET uavtalktest)
-#   target_link_libraries(uavtalk-test uavtalk)
-#endif()
+catkin_add_gtest(uavtalk-test test/test_uavtalk.cpp)
+if(TARGET uavtalk-test)
+   target_link_libraries(uavtalk-test uavobjects uavtalk)
+endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
