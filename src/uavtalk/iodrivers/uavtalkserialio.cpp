@@ -43,6 +43,11 @@ UAVTalkSerialIO::UAVTalkSerialIO(std::string device, unsigned int baudrate) :
 	io_thread.swap(t);
 }
 
+UAVTalkSerialIO::~UAVTalkSerialIO()
+{
+	io_service.stop();
+}
+
 void UAVTalkSerialIO::write(const uint8_t *data, size_t length)
 {
 	{
