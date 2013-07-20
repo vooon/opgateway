@@ -29,7 +29,7 @@
 #define UAVTALK_DEBUG
 #ifdef UAVTALK_DEBUG
   #include <ros/console.h>
-  #define UAVTALK_LOG_DEBUG ROS_DEBUG
+  #define UAVTALK_LOG_DEBUG(args...) ROS_DEBUG_NAMED("UAVTalk", ##args)
 #else // UAVTALK_DEBUG
   #define UAVTALK_LOG_DEBUG(args...)
 #endif // UAVTALK_DEBUG
@@ -281,7 +281,7 @@ bool UAVTalk::processInputByte(uint8_t rxbyte)
 			if (rxObj == NULL && rxType != TYPE_OBJ_REQ) {
 				stats.rxErrors++;
 				rxState = STATE_SYNC;
-				UAVTALK_LOG_DEBUG("UAVTalk: ObjID->Sync (badtype)");
+				UAVTALK_LOG_DEBUG("UAVTalk: ObjID->Sync (badtype) ObjID=0x%08x", rxObjId);
 				break;
 			}
 

@@ -228,7 +228,7 @@ void Telemetry::transactionCompleted(UAVObject *obj, bool success)
 		// Process new object updates from queue
 		processObjectQueue();
 	} else {
-		ROS_DEBUG("Error: received a transaction completed when did not expect it.");
+		ROS_DEBUG_NAMED("Telemetry", "Error: received a transaction completed when did not expect it.");
 	}
 }
 
@@ -299,7 +299,7 @@ void Telemetry::processObjectUpdates(UAVObject *obj, EventMask event, bool allIn
 		} else {
 			++txErrors;
 			obj->transactionCompleted(obj, false); // emit
-			ROS_WARN_STREAM("Telemetry: priority event queue is full, event lost (" << obj->getName() << ")");
+			ROS_WARN_STREAM_NAMED("Telemetry", "Telemetry: priority event queue is full, event lost (" << obj->getName() << ")");
 		}
 
 	} else {
@@ -356,7 +356,7 @@ void Telemetry::processObjectQueue()
 
 		std::map<uint32_t, ObjectTransactionInfo *>::iterator itr = transMap.find(objInfo.obj->getObjID());
 		if (itr != transMap.end()) {
-			ROS_DEBUG_STREAM("!!!!!! Making request for an object: " << objInfo.obj->getName() << " for which a request is already in progress!!!!!!");
+			ROS_DEBUG_STREAM_NAMED("Telemetry", "!!!!!! Making request for an object: " << objInfo.obj->getName() << " for which a request is already in progress!!!!!!");
 		}
 
 		UAVObject::Metadata metadata     = objInfo.obj->getMetadata();

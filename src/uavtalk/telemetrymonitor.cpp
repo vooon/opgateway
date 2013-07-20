@@ -93,7 +93,7 @@ void TelemetryMonitor::startRetrievingObjects()
 	}
 
 	// Start retrieving
-	ROS_DEBUG("Starting to retrieve meta and settings objects from the autopilot (%zu objects)",
+	ROS_DEBUG_NAMED("TelemetryMonitor", "Starting to retrieve meta and settings objects from the autopilot (%zu objects)",
 			queue.size());
 	retrieveNextObject();
 }
@@ -102,7 +102,7 @@ void TelemetryMonitor::startRetrievingObjects()
  */
 void TelemetryMonitor::stopRetrievingObjects()
 {
-	ROS_DEBUG("Object retrieval has been cancelled");
+	ROS_DEBUG_NAMED("TelemetryMonitor", "Object retrieval has been cancelled");
 	while (!queue.empty())
 		queue.pop();
 }
@@ -113,7 +113,7 @@ void TelemetryMonitor::retrieveNextObject()
 {
 	// If queue is empty return
 	if (queue.empty()) {
-		ROS_DEBUG("Object retrieval completed");
+		ROS_DEBUG_NAMED("TelemetryMonitor", "Object retrieval completed");
 		connected(); // emit signal
 		return;
 	}
@@ -225,13 +225,13 @@ void TelemetryMonitor::processStatsUpdates(boost::system::error_code error)
 	// Act on new connections or disconnections
 	if (gcsStats.Status == GCSTelemetryStats::STATUS_CONNECTED && gcsStats.Status != oldStatus) {
 		stats_interval = boost::posix_time::milliseconds(STATS_UPDATE_PERIOD_MS);
-		ROS_INFO("Connection with the autopilot established");
+		ROS_INFO_NAMED("TelemetryMonitor", "Connection with the autopilot established");
 		startRetrievingObjects();
 	}
 	if (gcsStats.Status == GCSTelemetryStats::STATUS_DISCONNECTED && gcsStats.Status != oldStatus) {
 		stats_interval = boost::posix_time::milliseconds(STATS_CONNECT_PERIOD_MS);
-		ROS_INFO("Connection with the autopilot lost");
-		ROS_INFO("Trying to connect to the autopilot");
+		ROS_INFO_NAMED("TelemetryMonitor", "Connection with the autopilot lost");
+		ROS_INFO_NAMED("TelemetryMonitor", "Trying to connect to the autopilot");
 		disconnected(); // emit signal
 	}
 

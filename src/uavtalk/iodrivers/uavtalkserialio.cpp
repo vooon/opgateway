@@ -68,7 +68,7 @@ void UAVTalkSerialIO::async_read_end(boost::system::error_code error, size_t byt
 		if (serial_dev.is_open()) {
 			serial_dev.close();
 			sig_closed();
-			ROS_DEBUG("async_read_end: error! port closed.");
+			ROS_DEBUG_NAMED("UAVTalk", "async_read_end: error! port closed.");
 		}
 	} else {
 		sig_read(rx_buf, bytes_transfered);
@@ -120,7 +120,7 @@ void UAVTalkSerialIO::async_write_end(boost::system::error_code error)
 		if (serial_dev.is_open()) {
 			serial_dev.close();
 			sig_closed();
-			ROS_DEBUG("async_write_end: error! port closed.");
+			ROS_DEBUG_NAMED("UAVTalk", "async_write_end: error! port closed.");
 		}
 	}
 }
