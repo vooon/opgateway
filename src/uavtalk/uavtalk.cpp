@@ -26,7 +26,7 @@
  */
 #include "uavtalk.h"
 
-#define UAVTALK_DEBUG
+//#define UAVTALK_DEBUG
 #ifdef UAVTALK_DEBUG
   #include <ros/console.h>
   #define UAVTALK_LOG_DEBUG(args...) ROS_DEBUG_NAMED("UAVTalk", ##args)
