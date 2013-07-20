@@ -113,10 +113,10 @@ TEST(UAVTalkManager, init_talk)
 	SystemStats *sysSts = SystemStats::GetInstance(objMngr, 0);
 	sysSts->objectUpdated.connect(objUpdated);
 
-	UAVObject::Metadata mdata = sysSts->getMetadata();
-	mdata.gcsTelemetryUpdatePeriod = 500;
-	UAVObject::SetGcsTelemetryUpdateMode(mdata, UAVObject::UPDATEMODE_PERIODIC);
-	sysSts->setMetadata(mdata);
+	//UAVObject::Metadata mdata = sysSts->getMetadata();
+	//mdata.gcsTelemetryUpdatePeriod = 500;
+	//UAVObject::SetGcsTelemetryUpdateMode(mdata, UAVObject::UPDATEMODE_PERIODIC);
+	//sysSts->setMetadata(mdata);
 
 	FlightStatus *flSt = FlightStatus::GetInstance(objMngr, 0);
 	flSt->objectUpdated.connect(objUpdated);
