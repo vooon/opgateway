@@ -24,8 +24,6 @@
 #include "uavtalkrelay.h"
 #include <ros/console.h>
 
-#define SYNC_VAL 0x3C
-
 using namespace openpilot;
 
 /** Constructor
@@ -33,10 +31,22 @@ using namespace openpilot;
 UAVTalkRelay::UAVTalkRelay(UAVTalkIOBase *iodev, UAVObjectManager *objMngr) :
 	UAVTalk(iodev, objMngr)
 {
+	UAVObjectManager::objects_map uavos = objMngr->getObjects();
+	for (UAVObjectManager::objects_map::iterator it = uavos.begin(); it != uabos.end(); ++it) {
+		for (UAVObjectManager::inst_vec::iterator inst_it = it->second.begin(); inst_it != it->second.end(); ++inst_it) {
+			ints_it->objectUpdated.connect(boost::bind(&UAVTalkRelay::sendObjectSlot, this, _1));
+		}
+	}
 }
 
 UAVTalkRelay::~UAVTalkRelay()
 {
+	UAVObjectManager::objects_map uavos = objMngr->getObjects();
+	for (UAVObjectManager::objects_map::iterator it = uavos.begin(); it != uabos.end(); ++it) {
+		for (UAVObjectManager::inst_vec::iterator inst_it = it->second.begin(); inst_it != it->second.end(); ++inst_it) {
+			ints_it->objectUpdated.disconnect(boost::bind(&UAVTalkRelay::sendObjectSlot, this, _1));
+		}
+	}
 }
 
 void UAVTalkRelay::sendObjectSlot(UAVObject *obj)
