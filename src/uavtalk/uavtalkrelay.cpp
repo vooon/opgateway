@@ -21,8 +21,9 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-#include "uavtalkrelay.h"
 #include <ros/console.h>
+#include "uavtalkrelay.h"
+#include "gcstelemetrystats.h"
 
 using namespace openpilot;
 
@@ -51,6 +52,10 @@ UAVTalkRelay::~UAVTalkRelay()
 
 void UAVTalkRelay::sendObjectSlot(UAVObject *obj)
 {
+	// Do not forward GCSTelemetryStats
+	if (obj->getObjID() == GCSTelemetryStats::OBJID)
+		return;
+
 	sendObject(obj, false, false);
 }
 
@@ -68,6 +73,10 @@ bool UAVTalkRelay::receiveObject(uint8_t type, uint32_t objId, uint16_t instId, 
 	UAVObject *obj    = NULL;
 	bool error        = false;
 	bool allInstances = (instId == ALL_INSTANCES);
+
+	// Do not forward GCSTelemetryStats
+	if (objId == GCSTelemetryStats::OBJID)
+		return false;
 
 	// Process message type
 	switch (type) {
