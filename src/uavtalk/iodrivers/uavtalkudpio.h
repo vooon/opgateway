@@ -25,6 +25,7 @@
 #include "uavtalkiobase.h"
 #include <boost/asio/ip/udp.hpp>
 #include <boost/shared_array.hpp>
+#include <memory>
 
 namespace openpilot
 {
@@ -42,6 +43,7 @@ public:
 
 private:
 	boost::asio::io_service io_service;
+	std::auto_ptr<boost::asio::io_service::work> io_work;
 	boost::thread io_thread;
 	boost::asio::ip::udp::socket socket;
 	boost::asio::ip::udp::endpoint sender_endpoint;
@@ -52,6 +54,7 @@ private:
 	boost::shared_array<uint8_t> tx_buf;
 	size_t tx_buf_size;
 	boost::recursive_mutex mutex;
+	bool sender_exists;
 
 	void do_read(void);
 	void async_read_end(boost::system::error_code ec, size_t bytes_transfered);

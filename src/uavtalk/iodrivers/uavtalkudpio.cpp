@@ -27,7 +27,9 @@ using namespace openpilot;
 
 UAVTalkUDPIO::UAVTalkUDPIO(std::string server_addr, unsigned int server_port) :
 	io_service(),
-	socket(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), server_port))
+	io_work(new boost::asio::io_service::work(io_service)),
+	socket(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), server_port)),
+	sender_exists(false)
 {
 	// give some work to io_service before start
 	io_service.post(boost::bind(&UAVTalkUDPIO::do_read, this));
@@ -39,6 +41,7 @@ UAVTalkUDPIO::UAVTalkUDPIO(std::string server_addr, unsigned int server_port) :
 
 UAVTalkUDPIO::~UAVTalkUDPIO()
 {
+	io_work.reset();
 	io_service.stop();
 }
 
@@ -71,6 +74,7 @@ void UAVTalkUDPIO::async_read_end(boost::system::error_code error, size_t bytes_
 			ROS_DEBUG_NAMED("UAVTalk", "async_read_end:udp: error! port closed.");
 		}
 	} else {
+		sender_exists = true;
 		sig_read(rx_buf, bytes_transfered);
 		do_read();
 	}
@@ -78,6 +82,11 @@ void UAVTalkUDPIO::async_read_end(boost::system::error_code error, size_t bytes_
 
 void UAVTalkUDPIO::do_write(void)
 {
+	if (!sender_exists) {
+		ROS_DEBUG_NAMED("UAVTalk", "do_write:udp: sender do not exists!");
+		return;
+	}
+
 	// if write not in progress
 	if (tx_buf == 0) {
 		boost::recursive_mutex::scoped_lock lock(mutex);
