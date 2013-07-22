@@ -82,6 +82,7 @@ add_library(uavtalk
    src/uavtalk/telemetry.cpp
    src/uavtalk/telemetrymonitor.cpp
    src/uavtalk/telemetrymanager.cpp
+   src/uavtalk/uavtalkrelay.cpp
    src/uavtalk/iodrivers/uavtalkserialio.cpp
    src/uavtalk/iodrivers/uavtalkudpio.cpp
 )
