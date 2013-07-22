@@ -24,6 +24,7 @@
 #ifndef TELEMETRYMANAGER_H
 #define TELEMETRYMANAGER_H
 
+#include <memory>
 #include <boost/thread/thread.hpp>
 #include "telemetrymonitor.h"
 #include "telemetry.h"
@@ -56,6 +57,7 @@ private: // slots:
 
 private:
 	boost::asio::io_service io_service;
+	std::auto_ptr<boost::asio::io_service::work> io_work;
 	boost::thread io_thread;
 	UAVObjectManager *objMngr;
 	UAVTalk *utalk;

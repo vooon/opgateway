@@ -31,6 +31,7 @@ using namespace openpilot;
 
 TelemetryManager::TelemetryManager(UAVObjectManager *objMngr_) :
 	io_service(),
+	io_work(new boost::asio::io_service::work(io_service)),
 	autopilotConnected(false),
 	objMngr(objMngr_)
 {
@@ -41,6 +42,7 @@ TelemetryManager::TelemetryManager(UAVObjectManager *objMngr_) :
 
 TelemetryManager::~TelemetryManager()
 {
+	io_work.reset();
 	io_service.stop();
 }
 
