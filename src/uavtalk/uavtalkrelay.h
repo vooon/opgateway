@@ -20,16 +20,15 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-#ifndef UAVTALK_H
-#define UAVTALK_H
+#ifndef UAVTALKRELAY_H
+#define UAVTALKRELAY_H
 
-#include "uavobjectmanager.h"
 #include "uavtalk.h"
 
 namespace openpilot
 {
 
-class UAVTalkRelay: public UAVTalk {
+class UAVTalkRelay : public UAVTalk {
 public:
 	UAVTalkRelay(UAVTalkIOBase *iodev, UAVObjectManager *objMngr);
 	~UAVTalkRelay();
@@ -41,4 +40,4 @@ private:
 
 } // namespace openpilot
 
-#endif // UAVTALK_H
+#endif // UAVTALKRELAY_H

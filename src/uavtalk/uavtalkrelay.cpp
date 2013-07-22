@@ -32,9 +32,9 @@ UAVTalkRelay::UAVTalkRelay(UAVTalkIOBase *iodev, UAVObjectManager *objMngr) :
 	UAVTalk(iodev, objMngr)
 {
 	UAVObjectManager::objects_map uavos = objMngr->getObjects();
-	for (UAVObjectManager::objects_map::iterator it = uavos.begin(); it != uabos.end(); ++it) {
+	for (UAVObjectManager::objects_map::iterator it = uavos.begin(); it != uavos.end(); ++it) {
 		for (UAVObjectManager::inst_vec::iterator inst_it = it->second.begin(); inst_it != it->second.end(); ++inst_it) {
-			ints_it->objectUpdated.connect(boost::bind(&UAVTalkRelay::sendObjectSlot, this, _1));
+			(*inst_it)->objectUpdated.connect(boost::bind(&UAVTalkRelay::sendObjectSlot, this, _1));
 		}
 	}
 }
@@ -42,9 +42,9 @@ UAVTalkRelay::UAVTalkRelay(UAVTalkIOBase *iodev, UAVObjectManager *objMngr) :
 UAVTalkRelay::~UAVTalkRelay()
 {
 	UAVObjectManager::objects_map uavos = objMngr->getObjects();
-	for (UAVObjectManager::objects_map::iterator it = uavos.begin(); it != uabos.end(); ++it) {
+	for (UAVObjectManager::objects_map::iterator it = uavos.begin(); it != uavos.end(); ++it) {
 		for (UAVObjectManager::inst_vec::iterator inst_it = it->second.begin(); inst_it != it->second.end(); ++inst_it) {
-			ints_it->objectUpdated.disconnect(boost::bind(&UAVTalkRelay::sendObjectSlot, this, _1));
+			(*inst_it)->objectUpdated.disconnect(boost::bind(&UAVTalkRelay::sendObjectSlot, this, _1));
 		}
 	}
 }
@@ -62,7 +62,7 @@ void UAVTalkRelay::sendObjectSlot(UAVObject *obj)
  * \param[in] length Buffer length
  * \return Success (true), Failure (false)
  */
-bool UAVTalkRealy::receiveObject(uint8_t type, uint32_t objId, uint16_t instId, uint8_t *data, size_t length)
+bool UAVTalkRelay::receiveObject(uint8_t type, uint32_t objId, uint16_t instId, uint8_t *data, size_t length)
 {
 	//UNUSED(length);
 	UAVObject *obj    = NULL;
@@ -76,13 +76,13 @@ bool UAVTalkRealy::receiveObject(uint8_t type, uint32_t objId, uint16_t instId, 
 		if (!allInstances) {
 			UAVObject *tobj = objMngr->getObject(objId);
 			if (tobj != NULL)
-				tobj->objectUpdated.disconnect(boost::bind(&UAVTalkRelay::rendObjectSlot, this, _1));
+				tobj->objectUpdated.disconnect(boost::bind(&UAVTalkRelay::sendObjectSlot, this, _1));
 
 			// Get object and update its data
 			obj = updateObject(objId, instId, data);
 
 			if (tobj != NULL)
-				tobj->objectUpdated.connect(boost::bind(&UAVTalkRelay::rendObjectSlot, this, _1));
+				tobj->objectUpdated.connect(boost::bind(&UAVTalkRelay::sendObjectSlot, this, _1));
 			if (dynamic_cast<UAVMetaObject *>(tobj) != NULL)
 				tobj->updated();
 
@@ -102,13 +102,13 @@ bool UAVTalkRealy::receiveObject(uint8_t type, uint32_t objId, uint16_t instId, 
 		if (!allInstances) {
 			UAVObject *tobj = objMngr->getObject(objId);
 			if (tobj != NULL)
-				tobj->objectUpdated.disconnect(boost::bind(&UAVTalkRelay::rendObjectSlot, this, _1));
+				tobj->objectUpdated.disconnect(boost::bind(&UAVTalkRelay::sendObjectSlot, this, _1));
 
 			// Get object and update its data
 			obj = updateObject(objId, instId, data);
 
 			if (tobj != NULL)
-				tobj->objectUpdated.connect(boost::bind(&UAVTalkRelay::rendObjectSlot, this, _1));
+				tobj->objectUpdated.connect(boost::bind(&UAVTalkRelay::sendObjectSlot, this, _1));
 			if (dynamic_cast<UAVMetaObject *>(tobj) != NULL)
 				tobj->updated();
 

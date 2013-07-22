@@ -56,7 +56,7 @@ public:
 private: // slots:
 	void processInputStream(uint8_t *data, size_t lenght);
 
-private:
+protected:
 	typedef struct {
 		UAVObject *obj;
 		bool allInstances;
