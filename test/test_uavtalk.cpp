@@ -7,7 +7,9 @@
 #include "uavobjectmanager.h"
 #include "uavobjectsinit.h"
 #include "telemetrymanager.h"
+#include "uavtalkrelay.h"
 #include "iodrivers/uavtalkserialio.h"
+#include "iodrivers/uavtalkudpio.h"
 #include "systemstats.h"
 #include "flightstatus.h"
 #include "flighttelemetrystats.h"
@@ -133,6 +135,9 @@ TEST(UAVTalkManager, init_talk)
 	telMngr->connected.connect(telConnected);
 	telMngr->disconnected.connect(telDisconnected);
 	telMngr->start(ser);
+
+	UAVTalkUDPIO *udp = new UAVTalkUDPIO("any-todo", 9000);
+	UAVTalkRelay *relay = new UAVTalkRelay(udp, objMngr);
 
 	while(true) {};
 
