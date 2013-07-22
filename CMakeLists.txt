@@ -83,6 +83,7 @@ add_library(uavtalk
    src/uavtalk/telemetrymonitor.cpp
    src/uavtalk/telemetrymanager.cpp
    src/uavtalk/iodrivers/uavtalkserialio.cpp
+   src/uavtalk/iodrivers/uavtalkudpio.cpp
 )
 add_dependencies(uavtalk uavobjects)
 target_link_libraries(uavtalk
