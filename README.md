@@ -3,7 +3,7 @@ opgateway
 
 ROS node for communicate with OpenPilot system.
 
-Depends on OpenPilot uavobjdenerator from https://github.com/vooon/OpenPilot vooon/uavobjgen-ros branch
+Depends on OpenPilot uavobjdenerator from https://github.com/vooon/OpenPilot vooon/uavobjgen-ros branch.
 
 
 Features
@@ -19,3 +19,16 @@ Limitations
 
 Only for linux.
 Tested on Ubuntu ARM 13.04 armhf.
+
+
+Links
+-----
+
+  * [OpenPilot][1] - mainline developer tree
+  * [Globalcontrol][2] - initial idea how i could write ros node
+  * [TauLabs][3] - the source of UavTalk Relay (and base for GlobalControl)
+
+
+[1]: http://git.openpilot.org/browse/OpenPilot
+[2]: https://github.com/fhp/TauLabs.git
+[3]: https://github.com/TauLabs/TauLabs.git
