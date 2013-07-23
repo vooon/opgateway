@@ -114,7 +114,7 @@ protected:
 	// Methods
 	bool objectTransaction(UAVObject *obj, uint8_t type, bool allInstances);
 	bool processInputByte(uint8_t rxbyte);
-	bool receiveObject(uint8_t type, uint32_t objId, uint16_t instId, uint8_t *data, size_t length);
+	virtual bool receiveObject(uint8_t type, uint32_t objId, uint16_t instId, uint8_t *data, size_t length);
 	UAVObject *updateObject(uint32_t objId, uint16_t instId, uint8_t *data);
 	void updateAck(UAVObject *obj);
 	void updateNack(UAVObject *obj);

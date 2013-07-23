@@ -56,6 +56,7 @@ void UAVTalkRelay::sendObjectSlot(UAVObject *obj)
 	if (obj->getObjID() == GCSTelemetryStats::OBJID)
 		return;
 
+	ROS_DEBUG_NAMED("Relay", "Relay: send object %s (0x%08x)", obj->getName().c_str(), obj->getObjID());
 	sendObject(obj, false, false);
 }
 
@@ -77,6 +78,8 @@ bool UAVTalkRelay::receiveObject(uint8_t type, uint32_t objId, uint16_t instId, 
 	// Do not forward GCSTelemetryStats
 	if (objId == GCSTelemetryStats::OBJID)
 		return false;
+
+	ROS_DEBUG_NAMED("Relay", "Relay: receive type 0x%02x object 0x%08x inst %u", type, objId, instId);
 
 	// Process message type
 	switch (type) {
