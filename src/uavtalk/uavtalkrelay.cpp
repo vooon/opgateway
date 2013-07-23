@@ -27,6 +27,9 @@
 
 using namespace openpilot;
 
+//#define RELAY_DEBUG(args...)	ROS_DEBUG_NAMED("Relay", ##args)
+#define RELAY_DEBUG(args...)
+
 /** Constructor
  */
 UAVTalkRelay::UAVTalkRelay(UAVTalkIOBase *iodev, UAVObjectManager *objMngr) :
@@ -56,7 +59,7 @@ void UAVTalkRelay::sendObjectSlot(UAVObject *obj)
 	if (obj->getObjID() == GCSTelemetryStats::OBJID)
 		return;
 
-	ROS_DEBUG_NAMED("Relay", "Relay: send object %s (0x%08x)", obj->getName().c_str(), obj->getObjID());
+	RELAY_DEBUG("Relay: send object %s (0x%08x)", obj->getName().c_str(), obj->getObjID());
 	sendObject(obj, false, false);
 }
 
@@ -79,8 +82,6 @@ bool UAVTalkRelay::receiveObject(uint8_t type, uint32_t objId, uint16_t instId, 
 	if (objId == GCSTelemetryStats::OBJID)
 		return false;
 
-	ROS_DEBUG_NAMED("Relay", "Relay: receive type 0x%02x object 0x%08x inst %u", type, objId, instId);
-
 	// Process message type
 	switch (type) {
 	case TYPE_OBJ:
@@ -100,8 +101,10 @@ bool UAVTalkRelay::receiveObject(uint8_t type, uint32_t objId, uint16_t instId, 
 
 			// Check if an ack is pending
 			if (obj != NULL) {
+				RELAY_DEBUG("Relay: OBJ %s (0x%08x) inst %u", obj->getName().c_str(), objId, instId);
 				updateAck(obj);
 			} else {
+				RELAY_DEBUG("Relay: OBJ (0x%08x) inst %u error", objId, instId);
 				error = true;
 			}
 		} else {
@@ -126,8 +129,10 @@ bool UAVTalkRelay::receiveObject(uint8_t type, uint32_t objId, uint16_t instId, 
 
 			// Transmit ACK
 			if (obj != NULL) {
+				RELAY_DEBUG("Relay: OBJ ACK %s (0x%08x) inst %u", obj->getName().c_str(), objId, instId);
 				transmitObject(obj, TYPE_ACK, false);
 			} else {
+				RELAY_DEBUG("Relay: OBJ ACK (0x%08x) inst %u error", objId, instId);
 				error = true;
 			}
 		} else {
@@ -144,10 +149,12 @@ bool UAVTalkRelay::receiveObject(uint8_t type, uint32_t objId, uint16_t instId, 
 		}
 		// If object was found transmit it
 		if (obj != NULL) {
+			RELAY_DEBUG("Relay: OBJ REQ %s (0x%08x) inst %u", obj->getName().c_str(), objId, instId);
 			transmitObject(obj, TYPE_OBJ, allInstances);
 		} else {
 			// Object was not found, transmit a NACK with the
 			// objId which was not found.
+			RELAY_DEBUG("Relay: OBJ REQ (0x%08x) inst %u error", objId, instId);
 			transmitNack(objId);
 			error = true;
 		}
@@ -160,8 +167,10 @@ bool UAVTalkRelay::receiveObject(uint8_t type, uint32_t objId, uint16_t instId, 
 			obj = objMngr->getObject(objId, instId);
 			// Check if object exists:
 			if (obj != NULL) {
+				RELAY_DEBUG("Relay: NACK %s (0x%08x) inst %u", obj->getName().c_str(), objId, instId);
 				updateNack(obj);
 			} else {
+				RELAY_DEBUG("Relay: NACK (0x%08x) inst %u error", objId, instId);
 				error = true;
 			}
 		}
@@ -174,14 +183,17 @@ bool UAVTalkRelay::receiveObject(uint8_t type, uint32_t objId, uint16_t instId, 
 			obj = objMngr->getObject(objId, instId);
 			// Check if an ack is pending
 			if (obj != NULL) {
+				RELAY_DEBUG("Relay: ACK %s (0x%08x) inst %u", obj->getName().c_str(), objId, instId);
 				updateAck(obj);
 			} else {
+				RELAY_DEBUG("Relay: ACK (0x%08x) inst %u error", objId, instId);
 				error = true;
 			}
 		}
 		break;
 
 	default:
+		RELAY_DEBUG("Relay: unknown packet type 0x%02x", type);
 		error = true;
 	}
 
