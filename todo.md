@@ -4,9 +4,8 @@ TO DO List
 opgateway_node
 --------------
 
-* Setup communnication with op autopilot
-* udp relay for GCS
 * ros diagnostics
+* pluginlib classes for ROS-UAVO connectors
 
 
 Lib UAVObjects
@@ -19,13 +18,12 @@ Lib UAVTalk
 -----------
 
 * opHID transfer (if we really need it)
-* UDP/TCP transfer (for UAVTalk relay subsystem)
 
 
 Plugin UAVTalk Relay
 --------------------
 
-* see plugin TauLabs uavtalkrelay
+* None
 
 
 Plugin GPSd client
