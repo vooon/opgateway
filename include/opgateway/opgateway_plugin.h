@@ -12,11 +12,13 @@ namespace opgateway
 
 class OPGatewayPluginBase {
 public:
-	virtual void initialize(UAVObjectManager *objMngr);
 	virtual ~OPGatewayPluginBase();
+	virtual OPGatewayPluginBase() {};
+	virtual void initialize(UAVObjectManager *objMngr);
+	virtual void update(void);
+	virtual void diag_update(void);
 
 protected:
-	OPGatewayPluginBase() {};
 };
 
 } // namespace opgateway
