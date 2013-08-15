@@ -1,0 +1,8 @@
+<library path="lib/libopgateway_plugins">
+	<class name="opgateway/StatsPlugin" type="opgateway::StatsPlugin" base_class_type="opgateway::OPGatewayPlugin">
+		<description>
+			Update Fligth and GCS stats diag.
+		</description>
+	</class>
+</library>
+

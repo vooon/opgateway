@@ -1,3 +1,5 @@
+#include <diagnostic_updater/diagnostic_updater.h>
+
 #ifndef OPGATEWAY_PLUGIN_H
 #define OPGATEWAY_PLUGIN_H
 
@@ -10,13 +12,11 @@ class UAVObjectManager;
 namespace opgateway
 {
 
-class OPGatewayPluginBase {
+class OPGatewayPlugin {
 public:
-	virtual ~OPGatewayPluginBase();
-	virtual OPGatewayPluginBase() {};
-	virtual void initialize(UAVObjectManager *objMngr);
+	virtual void init(openpilot::UAVObjectManager *objMngr);
 	virtual void update(void);
-	virtual void diag_update(void);
+	virtual diagnostic_updater::DiagnosticTask* get_diag_task(void) = NULL;
 
 protected:
 };

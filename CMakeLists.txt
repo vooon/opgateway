@@ -4,7 +4,7 @@ project(opgateway)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs std_msgs message_generation)
+find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs std_msgs message_generation pluginlib diagnostic_msgs diagnostic_updater)
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system thread timer date_time)
@@ -92,6 +92,14 @@ target_link_libraries(uavtalk
   ${Boost_LIBRARIES}
 )
 
+add_library(opgateway_plugins
+   src/plugins/status.cpp
+)
+target_link_libraries(opgateway_plugins
+   uavobjects
+   ${catkin_LIBRARIES}
+)
+
 ## Declare a cpp executable
 add_executable(opgateway_node src/opgateway_node.cpp)
 
@@ -100,6 +108,7 @@ add_executable(opgateway_node src/opgateway_node.cpp)
 add_dependencies(opgateway_node opgateway_generate_messages_cpp)
 add_dependencies(opgateway_node uavobjects)
 add_dependencies(opgateway_node uavtalk)
+add_dependencies(opgateway_node opgateway_plugins)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(opgateway_node
