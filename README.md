@@ -1,10 +1,13 @@
 opgateway
 =========
 
+**THIS PROJECT NOT DEVELOPED ANYMORE.**
+Since the hardware is not available for me, I went to the common autopilots with MAVLink protocol and wrote mavros package.
+
+
 ROS node for communicate with OpenPilot system.
 
 Depends on OpenPilot uavobjdenerator from https://github.com/vooon/OpenPilot vooon/uavobjgen-ros branch.
-
 
 Features
 --------
